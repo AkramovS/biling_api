@@ -1,60 +1,73 @@
--- Active: 1757133398577@@localhost@5432@utm
--- Create business users table
-CREATE TABLE IF NOT EXISTS users (
-    id BIGSERIAL PRIMARY KEY,
-    name TEXT NOT NULL
+-- migrations/000001_create_system_tables.up.sql
+
+-- 1. Системные пользователи
+CREATE TABLE system_accounts (
+    id SERIAL PRIMARY KEY,
+    login VARCHAR(255) NOT NULL DEFAULT '',
+    password VARCHAR(255) NOT NULL DEFAULT '',
+    name VARCHAR(100) NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    is_deleted INT NOT NULL DEFAULT 0
 );
 
--- Create accounts table
-CREATE TABLE IF NOT EXISTS accounts (
-    id BIGSERIAL PRIMARY KEY,
-    name TEXT NOT NULL
+-- 2. Системные группы
+CREATE TABLE system_group_info (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL DEFAULT '',
+    description VARCHAR(255) NOT NULL DEFAULT ''
 );
 
--- Create users_accounts junction table
-CREATE TABLE IF NOT EXISTS users_accounts (
-    id BIGSERIAL PRIMARY KEY,
-    uid BIGINT NOT NULL REFERENCES users (id) ON DELETE CASCADE,
-    account_id BIGINT NOT NULL REFERENCES accounts (id) ON DELETE CASCADE,
-    UNIQUE (uid, account_id)
+-- 3. Права для групп
+CREATE TABLE system_rights (
+    group_id INT NOT NULL DEFAULT 0,
+    fid INT NOT NULL DEFAULT 0,
+    UNIQUE (group_id, fid)
 );
 
--- Create auth_users table for system authentication
-CREATE TABLE IF NOT EXISTS auth_users (
-    id BIGSERIAL PRIMARY KEY,
-    email TEXT NOT NULL UNIQUE,
-    password_hash TEXT NOT NULL,
-    created_at TIMESTAMP(0) WITH TIME ZONE NOT NULL DEFAULT NOW()
+-- 4. Принадлежность пользователей к группам
+CREATE TABLE system_groups (
+    id SERIAL PRIMARY KEY,
+    group_id INT NOT NULL DEFAULT 0,
+    user_id INT NOT NULL DEFAULT 0
 );
 
--- Create groups table for RBAC
-CREATE TABLE IF NOT EXISTS groups (
-    id BIGSERIAL PRIMARY KEY,
-    name TEXT NOT NULL UNIQUE,
-    description TEXT
+
+-- 5 Таблица пользователей
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL
 );
 
--- Create group_members table
-CREATE TABLE IF NOT EXISTS group_members (
-    group_id BIGINT NOT NULL REFERENCES groups (id) ON DELETE CASCADE,
-    auth_user_id BIGINT NOT NULL REFERENCES auth_users (id) ON DELETE CASCADE,
-    PRIMARY KEY (group_id, auth_user_id)
+-- 6. Таблица аккаунтов
+CREATE TABLE accounts (
+    id SERIAL PRIMARY KEY
 );
 
--- Create group_permissions table
-CREATE TABLE IF NOT EXISTS group_permissions (
-    id BIGSERIAL PRIMARY KEY,
-    group_id BIGINT NOT NULL REFERENCES groups (id) ON DELETE CASCADE,
-    resource TEXT NOT NULL,
-    action TEXT NOT NULL,
-    UNIQUE (group_id, resource, action)
+-- 7. Связь пользователей с аккаунтами
+CREATE TABLE users_accounts (
+    id SERIAL PRIMARY KEY,
+    uid INT NOT NULL,
+    account_id INT NOT NULL
 );
 
--- Create indexes for better performance
-CREATE INDEX IF NOT EXISTS idx_users_accounts_uid ON users_accounts (uid);
 
-CREATE INDEX IF NOT EXISTS idx_users_accounts_account_id ON users_accounts (account_id);
+-- 8. Таблица тарифов
+CREATE TABLE tariffs (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    description TEXT NOT NULL,
+    price DECIMAL(10, 2) NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
 
-CREATE INDEX IF NOT EXISTS idx_group_members_auth_user_id ON group_members (auth_user_id);
-
-CREATE INDEX IF NOT EXISTS idx_group_permissions_group_id ON group_permissions (group_id);
+-- 9. Связь аккаунтов с тарифами
+CREATE TABLE account_tariff_link (
+    id SERIAL PRIMARY KEY,
+    account_id INT NOT NULL REFERENCES accounts(id),
+    tariff_id INT NOT NULL,
+    version  BIGINT NOT NULL DEFAULT 1,
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_by INT REFERENCES system_accounts(id),
+    UNIQUE(account_id)
+);

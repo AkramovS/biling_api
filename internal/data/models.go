@@ -10,22 +10,24 @@ var (
 	ErrEditConflict   = errors.New("edit conflict")
 )
 
-// Models wraps all data models
 type Models struct {
-	Users     UserModel
-	Accounts  AccountModel
-	AuthUsers AuthUserModel
-	Groups    GroupModel
-	Tokens    TokenModel
+	Users              UserModel
+	Accounts           AccountModel
+	AuthUsers          AuthUserModel
+	Groups             GroupModel
+	Permissions        PermissionModel
+	Tokens             TokenModel
+	AccountTariffLinks AccountTariffLinkModel
 }
 
-// NewModels creates a new Models instance
 func NewModels(db *sql.DB) Models {
 	return Models{
-		Users:     UserModel{DB: db},
-		Accounts:  AccountModel{DB: db},
-		AuthUsers: AuthUserModel{DB: db},
-		Groups:    GroupModel{DB: db},
-		Tokens:    TokenModel{},
+		Users:              UserModel{DB: db},
+		Accounts:           AccountModel{DB: db},
+		AuthUsers:          AuthUserModel{DB: db},
+		Groups:             GroupModel{DB: db},
+		Permissions:        PermissionModel{DB: db},
+		Tokens:             TokenModel{},
+		AccountTariffLinks: AccountTariffLinkModel{DB: db},
 	}
 }

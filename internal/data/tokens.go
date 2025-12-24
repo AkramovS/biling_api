@@ -20,15 +20,15 @@ type TokenModel struct {
 // Claims represents JWT claims
 type Claims struct {
 	AuthUserID int64  `json:"auth_user_id"`
-	Email      string `json:"email"`
+	Login      string `json:"login"`
 	jwt.RegisteredClaims
 }
 
 // GenerateToken creates a new JWT token for a user
-func (m TokenModel) GenerateToken(authUserID int64, email string, duration time.Duration) (string, error) {
+func (m TokenModel) GenerateToken(authUserID int64, login string, duration time.Duration) (string, error) {
 	claims := Claims{
 		AuthUserID: authUserID,
-		Email:      email,
+		Login:      login,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(duration)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),

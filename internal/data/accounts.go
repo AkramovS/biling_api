@@ -8,8 +8,7 @@ import (
 
 // Account represents a user account (ЛС)
 type Account struct {
-	ID   int64  `json:"id"`
-	Name string `json:"name"`
+	ID int64 `json:"id"`
 }
 
 // AccountModel wraps database connection
@@ -20,7 +19,7 @@ type AccountModel struct {
 // GetByUserID fetches all accounts for a specific user
 func (m AccountModel) GetByUserID(userID int64) ([]*Account, error) {
 	query := `
-		SELECT a.id, a.name
+		SELECT a.id
 		FROM accounts a
 		INNER JOIN users_accounts ua ON ua.account_id = a.id
 		WHERE ua.uid = $1
@@ -42,7 +41,6 @@ func (m AccountModel) GetByUserID(userID int64) ([]*Account, error) {
 
 		err := rows.Scan(
 			&account.ID,
-			&account.Name,
 		)
 		if err != nil {
 			return nil, err

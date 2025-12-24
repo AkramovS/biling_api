@@ -126,6 +126,7 @@ func openDB(cfg config) (*sql.DB, error) {
 
 	db.SetConnMaxIdleTime(duration)
 
+	//Graceful shutdown
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 

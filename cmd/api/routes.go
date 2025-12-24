@@ -3,6 +3,8 @@ package main
 import (
 	"net/http"
 
+	"biling_api/internal/data"
+
 	"github.com/julienschmidt/httprouter"
 )
 
@@ -16,12 +18,17 @@ func (app *application) routes() http.Handler {
 
 	// Public routes
 	router.HandlerFunc(http.MethodGet, "/v1/health", app.healthcheckHandler)
-	router.HandlerFunc(http.MethodPost, "/v1/auth/register", app.registerHandler)
 	router.HandlerFunc(http.MethodPost, "/v1/auth/login", app.loginHandler)
 
-	// Protected routes - require authentication and permission
+	// Protected routes
 	router.HandlerFunc(http.MethodGet, "/v1/users/:id/accounts",
-		app.requirePermission("accounts", "read", app.getUserAccountsHandler))
+		app.requirePermission(data.FIDAccountsRead, app.getUserAccountsHandler))
+
+	router.HandlerFunc(http.MethodGet, "/v1/account-tariffs/:id",
+		app.requirePermission(data.FIDTariffsRead, app.getAccountTariffHandler))
+
+	router.HandlerFunc(http.MethodPatch, "/v1/account-tariffs/:id",
+		app.requirePermission(data.FIDTariffsUpdate, app.changeTariffLinkHandler))
 
 	return app.recoverPanic(app.enableCORS(router))
 }

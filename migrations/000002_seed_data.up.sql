@@ -1,67 +1,57 @@
--- Insert test users
-INSERT INTO
-    users (name)
-VALUES ('Иван Иванов'),
-    ('Мария Петрова'),
-    ('Сергей Сидоров'),
-    ('Анна Смирнова'),
-    ('Дмитрий Козлов');
 
--- Insert test accounts
-INSERT INTO
-    accounts (name)
-VALUES ('Лицевой счет 10001'),
-    ('Лицевой счет 10002'),
-    ('Лицевой счет 10003'),
-    ('Лицевой счет 10004'),
-    ('Лицевой счет 10005'),
-    ('Лицевой счет 10006'),
-    ('Лицевой счет 10007'),
-    ('Лицевой счет 10008'),
-    ('Лицевой счет 10009'),
-    ('Лицевой счет 10010');
+-- Тестовые данные
 
--- Link users to accounts
-INSERT INTO
-    users_accounts (uid, account_id)
-VALUES (1, 1),
+-- Системные пользователи
+INSERT INTO system_accounts (login, password, name) VALUES
+    -- Пароль: admin123
+    ('admin', '$2a$12$ZMoG.NBGhq6YZwWgVAzn3.lamIZbVWVed0U5NX6QdpE3u0ljCGar.', 'Администратор')     
+    -- Пароль: password123
+    , ('username', '$2a$12$u9/OeAiKyR74JFKJ78tFkO0lzhz76vlmlpd1c0Fzs29DcT1yhcvvm', 'НЕКИЙ ТЕСТОВЫЙ АДМИН');
+
+-- Группы
+INSERT INTO system_group_info (name, description) VALUES
+    ('Администраторы', 'Полный доступ ко всем функциям системы');
+
+-- Права для группы Администраторы (group_id=1): просмотр счетов, просмотр тарифов, изменение тарифов
+INSERT INTO system_rights (group_id, fid) VALUES
+    (1, 1),  -- FID 1: просмотр счетов
+    (1, 2),  -- FID 2: просмотр тарифов
+    (1, 3);  -- FID 3: изменение тарифов
+
+-- Привязка пользователя admin (id=1) к группе Администраторы (group_id=1)
+INSERT INTO system_groups (group_id, user_id) VALUES
+    (1, 1);
+
+-- Обычные пользователи
+INSERT INTO users (name) VALUES
+    ('Иван Петров'),
+    ('Мария Сидорова'),
+    ('Алексей Козлов'),
+    ('Елена Новикова'),
+    ('Дмитрий Волков');
+
+INSERT INTO accounts (id) VALUES
+    (1),
+    (2),
+    (3);
+
+INSERT INTO users_accounts (uid, account_id) VALUES
+    (1, 1),
     (1, 2),
-    (1, 3), -- Иван has 3 accounts
-    (2, 4),
-    (2, 5), -- Мария has 2 accounts
-    (3, 6), -- Сергей has 1 account
-    (4, 7),
-    (4, 8),
-    (4, 9),
-    (4, 10), -- Анна has 4 accounts
-    (1, 4);
--- Ivan also has access to account 4 (shared)
+    (2, 1),
+    (3, 2),
+    (3, 3),
+    (4, 1),
+    (5, 3);
 
--- Insert auth users (password is 'password123' hashed with bcrypt)
--- Hash generated with: bcrypt.GenerateFromPassword([]byte("password123"), 12)
-INSERT INTO
-    auth_users (email, password_hash)
-VALUES (
-        'admin@example.com',
-        '$2a$12$LHqQVV7N5JqZX.9qE5Z5Vu8FYx9X8qjKQZQX5X5X5X5X5X5X5X5X.'
-    ),
-    (
-        'user@example.com',
-        '$2a$12$LHqQVV7N5JqZX.9qE5Z5Vu8FYx9X8qjKQZQX5X5X5X5X5X5X5X5X.'
-    );
 
--- Create API access group
-INSERT INTO
-    groups (name, description)
-VALUES (
-        'api_users',
-        'Users with API access to query accounts'
-    );
 
--- Grant permission to the group
-INSERT INTO
-    group_permissions (group_id, resource, action)
-VALUES (1, 'accounts', 'read');
+insert into tariffs (name, description, price) values
+    ('Тариф 1', 'Описание тарифа 1', 100.00),
+    ('Тариф 2', 'Описание тарифа 2', 200.00),
+    ('Тариф 3', 'Описание тарифа 3', 300.00);
 
--- Add admin user to the group (user '2' is NOT in the group)
-INSERT INTO group_members (group_id, auth_user_id) VALUES (1, 1);
+INSERT INTO account_tariff_link (account_id, tariff_id) VALUES
+    (1, 1),
+    (2, 2),
+    (3, 3);

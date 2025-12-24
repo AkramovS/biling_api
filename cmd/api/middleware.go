@@ -41,7 +41,7 @@ func (app *application) authenticate(next http.Handler) http.Handler {
 			return
 		}
 
-		user, err := app.models.AuthUsers.GetByEmail(claims.Email)
+		user, err := app.models.AuthUsers.GetByLogin(claims.Login)
 		if err != nil {
 			switch {
 			case errors.Is(err, data.ErrRecordNotFound):
@@ -57,8 +57,8 @@ func (app *application) authenticate(next http.Handler) http.Handler {
 	})
 }
 
-// requirePermission checks if authenticated user has required permission
-func (app *application) requirePermission(resource string, action string, next http.HandlerFunc) http.HandlerFunc {
+// requirePermission checks if authenticated user has required permission (fid)
+func (app *application) requirePermission(fid int64, next http.HandlerFunc) http.HandlerFunc {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		user := app.contextGetAuthUser(r)
 		if user == nil {
@@ -66,7 +66,7 @@ func (app *application) requirePermission(resource string, action string, next h
 			return
 		}
 
-		hasPermission, err := app.models.Groups.HasPermission(user.ID, resource, action)
+		hasPermission, err := app.models.Groups.HasPermission(user.ID, fid)
 		if err != nil {
 			app.serverErrorResponse(w, r, err)
 			return
